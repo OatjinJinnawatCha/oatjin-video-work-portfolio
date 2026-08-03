@@ -360,6 +360,8 @@ body {
   justify-content: center;
   position: relative;
   margin-bottom: 2rem;
+  /* Allow horizontal JS swipe; vertical scroll is still native */
+  touch-action: pan-y;
   /* Allow side-card peeks to overflow on desktop */
   overflow: visible;
 }
@@ -378,7 +380,35 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  touch-action: pan-y;
 }
+
+/* ─── Swipe zones ─────────────────────────────── */
+/* Transparent strips that sit ABOVE the iframes on touch devices.
+   Safari/iOS cannot receive touch events that originate inside an iframe's
+   browsing context — these zones provide a reliable hit target for swiping. */
+
+.swipe-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 28%;
+  z-index: 30; /* above card-overlay (z-index 10) and cards (z-index 10) */
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  /* Only active on touch screens */
+  display: none;
+}
+
+@media (pointer: coarse) {
+  .swipe-zone {
+    display: block;
+  }
+}
+
+.swipe-zone-left  { left: 0; }
+.swipe-zone-right { right: 0; }
+
 
 /* Desktop gradient mask for peek effect */
 @media (min-width: 640px) {

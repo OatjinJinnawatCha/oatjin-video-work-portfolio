@@ -142,6 +142,12 @@ export default function Carousel({ category }: { category: string }) {
     setTouchStart(e.targetTouches[0].clientX);
   };
 
+  const handleTouchMove = (e: React.TouchEvent) => {
+    // Intentionally left empty — we capture position on start/end only.
+    // Prevents Safari from cancelling the touchend event on scroll.
+    e.stopPropagation();
+  };
+
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (touchStart === null) return;
     const touchEnd = e.changedTouches[0].clientX;
@@ -261,6 +267,29 @@ export default function Carousel({ category }: { category: string }) {
             );
           })}
         </AnimatePresence>
+
+        {/* ─── Swipe zones ──────────────────────────────────────────────────────
+            Transparent strips at the left/right edges of the wrapper.
+            They sit above the iframes (z-index 30) so Safari can capture
+            touch events that would otherwise be swallowed by the iframe's
+            separate browsing context.
+        ──────────────────────────────────────────────────────────────────── */}
+        {filteredVideos.length > 1 && (
+          <>
+            <div
+              className="swipe-zone swipe-zone-left"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            />
+            <div
+              className="swipe-zone swipe-zone-right"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            />
+          </>
+        )}
       </div>
 
       {/* Right Arrow — hidden on mobile via CSS */}
