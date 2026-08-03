@@ -202,15 +202,13 @@ export default function Carousel({ category }: { category: string }) {
         </button>
       </div>
 
-      {/* Left Arrow — hidden on mobile via CSS */}
-      {filteredVideos.length > 1 && (
-        <button onClick={prev} className="nav-btn left-arrow" aria-label="Previous video">
-          <ChevronLeft size={22} />
-        </button>
-      )}
 
-      {/* Wrapper height is driven by the active card's computed height */}
-      <div className="cards-wrapper" style={{ height: activeH }}>
+      {/* Wrapper height animates smoothly when switching portrait ↔ landscape */}
+      <motion.div
+        className="cards-wrapper"
+        animate={{ height: activeH }}
+        transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] }}
+      >
         <AnimatePresence mode="popLayout">
           {filteredVideos.map((video, index) => {
             const isActive = index === activeIndex;
@@ -252,7 +250,17 @@ export default function Carousel({ category }: { category: string }) {
                   width: cardWidth,
                   height: cardHeight
                 }}
-                transition={{ duration: 0.5, ease: 'easeOut' }}
+                transition={{
+                  // Spring for position + scale — feels physical
+                  x:     { type: 'spring', stiffness: 300, damping: 32, mass: 0.9 },
+                  scale: { type: 'spring', stiffness: 300, damping: 32, mass: 0.9 },
+                  // Smooth tween for size + opacity
+                  width:     { duration: 0.38, ease: [0.25, 0.46, 0.45, 0.94] },
+                  height:    { duration: 0.38, ease: [0.25, 0.46, 0.45, 0.94] },
+                  opacity:   { duration: 0.25, ease: 'easeOut' },
+                  boxShadow: { duration: 0.3,  ease: 'easeOut' },
+                  zIndex:    { duration: 0 },
+                }}
                 onClick={() => {
                   if (isPrev) prev();
                   if (isNext) next();
@@ -288,13 +296,33 @@ export default function Carousel({ category }: { category: string }) {
             />
           </>
         )}
-      </div>
+      </motion.div>
 
-      {/* Right Arrow — hidden on mobile via CSS */}
+      {/* Side arrows — tablet/desktop only (hidden on mobile via CSS) */}
+      {filteredVideos.length > 1 && (
+        <button onClick={prev} className="nav-btn left-arrow" aria-label="Previous video">
+          <ChevronLeft size={22} />
+        </button>
+      )}
       {filteredVideos.length > 1 && (
         <button onClick={next} className="nav-btn right-arrow" aria-label="Next video">
           <ChevronRight size={22} />
         </button>
+      )}
+
+      {/* Bottom arrow row — mobile only */}
+      {filteredVideos.length > 1 && (
+        <div className="mobile-nav-row">
+          <button onClick={prev} className="mobile-nav-btn" aria-label="Previous video">
+            <ChevronLeft size={20} />
+          </button>
+          <span className="mobile-nav-counter">
+            {activeIndex + 1} / {filteredVideos.length}
+          </span>
+          <button onClick={next} className="mobile-nav-btn" aria-label="Next video">
+            <ChevronRight size={20} />
+          </button>
+        </div>
       )}
     </div>
   );
