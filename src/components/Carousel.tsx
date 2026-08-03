@@ -139,16 +139,16 @@ export default function Carousel({ category }: { category: string }) {
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    e.stopPropagation();
     setTouchStart(e.targetTouches[0].clientX);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    // Intentionally left empty — we capture position on start/end only.
-    // Prevents Safari from cancelling the touchend event on scroll.
     e.stopPropagation();
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
+    e.stopPropagation();
     if (touchStart === null) return;
     const touchEnd = e.changedTouches[0].clientX;
     const distance = touchStart - touchEnd;
@@ -175,8 +175,6 @@ export default function Carousel({ category }: { category: string }) {
   return (
     <div
       className="carousel-container"
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
     >
       {/* Orientation Filter Toggle */}
       <div className="orientation-toggle">

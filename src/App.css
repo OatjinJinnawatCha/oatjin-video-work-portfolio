@@ -47,7 +47,6 @@ body {
     radial-gradient(ellipse 60% 50% at 55% 55%, rgba(20, 70, 130, 0.45), transparent),
     radial-gradient(ellipse 40% 40% at 80% 80%, rgba(160, 60, 40, 0.4), transparent),
     #0b0c10;
-  /* Subtle slow pulse to feel alive */
   animation: burstPulse 4s ease-in-out infinite alternate;
 }
 
