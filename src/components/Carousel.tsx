@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import '../App.css'; // Make sure styles are applied
+import '../App.css';
 
 const videos = [
   {
@@ -56,12 +56,65 @@ const videos = [
   }
 ];
 
+/**
+ * Compute card dimensions for the active (centre) card based on screen tier.
+ *
+ * Tiers:
+ *   mobile  < 640px
+ *   tablet  640 – 1023px
+ *   desktop ≥ 1024px
+ */
+function getCardDimensions(windowWidth: number, isHorizontal: boolean) {
+  const isMobile = windowWidth < 640;
+  const isTablet = windowWidth >= 640 && windowWidth < 1024;
+
+  if (isMobile) {
+    // Fill available width inside glass-card (1rem padding each side = 32px, plus 2×16px outer = 64px total)
+    const w = Math.min(windowWidth - 64, 400);
+    const h = isHorizontal ? w * (9 / 16) : w * (16 / 9);
+    return { w, h };
+  }
+
+  if (isTablet) {
+    // Use ~65% of screen width, capped sensibly
+    const w = isHorizontal
+      ? Math.min(Math.round(windowWidth * 0.65), 580)
+      : Math.min(Math.round(windowWidth * 0.35), 320);
+    const h = isHorizontal ? Math.round(w * (9 / 16)) : Math.round(w * (16 / 9));
+    return { w, h };
+  }
+
+  // Desktop — original design dimensions
+  return isHorizontal ? { w: 640, h: 360 } : { w: 340, h: 604 };
+}
+
+/**
+ * How far side cards are pushed left/right from centre.
+ */
+function getXOffset(windowWidth: number) {
+  if (windowWidth < 640) return windowWidth * 0.55;
+  if (windowWidth < 1024) return Math.min(windowWidth * 0.45, 380);
+  return 400;
+}
+
+type OrientationFilter = 'landscape' | 'portrait';
+
 export default function Carousel({ category }: { category: string }) {
-  const filteredVideos = category === 'All' ? videos : videos.filter(v => v.category === category);
+  const baseVideos = category === 'All' ? videos : videos.filter(v => v.category === category);
+  const [orientationFilter, setOrientationFilter] = useState<OrientationFilter>('landscape');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [resetKeys, setResetKeys] = useState<Record<number, number>>({});
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
   const [touchStart, setTouchStart] = useState<number | null>(null);
+
+  const filteredVideos = baseVideos.filter(v =>
+    orientationFilter === 'landscape' ? v.type === 'horizontal' : v.type !== 'horizontal'
+  );
+
+  const handleOrientationChange = (val: OrientationFilter) => {
+    setOrientationFilter(val);
+    setCurrentIndex(0);
+  };
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -77,7 +130,7 @@ export default function Carousel({ category }: { category: string }) {
     }
     setCurrentIndex(prev => (prev + 1) % filteredVideos.length);
   };
-  
+
   const prev = () => {
     if (filteredVideos.length > 0) {
       setResetKeys(prev => ({ ...prev, [filteredVideos[activeIndex].id]: (prev[filteredVideos[activeIndex].id] || 0) + 1 }));
@@ -96,71 +149,86 @@ export default function Carousel({ category }: { category: string }) {
     const swipeThreshold = 50;
 
     if (distance > swipeThreshold) {
-      next(); // Swiped left
+      next();
     } else if (distance < -swipeThreshold) {
-      prev(); // Swiped right
+      prev();
     }
     setTouchStart(null);
   };
 
   if (filteredVideos.length === 0) {
-    return <div style={{height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>No videos in this category.</div>;
+    return <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>No videos in this category.</div>;
   }
 
+  // Derive wrapper height from the active card's dimensions
+  const activeVideo = filteredVideos[activeIndex];
+  const isHorizontal = activeVideo.type === 'horizontal';
+  const { h: activeH } = getCardDimensions(windowWidth, isHorizontal);
+  const xOffset = getXOffset(windowWidth);
+
   return (
-    <div 
+    <div
       className="carousel-container"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Left Arrow outside wrapper so it's not affected by mask dissolve */}
+      {/* Orientation Filter Toggle */}
+      <div className="orientation-toggle">
+        <button
+          className={`orient-btn ${orientationFilter === 'landscape' ? 'active' : ''}`}
+          onClick={() => handleOrientationChange('landscape')}
+          aria-label="Show landscape videos"
+        >
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect x="0.5" y="0.5" width="15" height="11" rx="2.5" stroke="currentColor" strokeWidth="1.2"/>
+            <circle cx="8" cy="6" r="2" fill="currentColor" opacity="0.5"/>
+          </svg>
+          Landscape
+        </button>
+        <button
+          className={`orient-btn ${orientationFilter === 'portrait' ? 'active' : ''}`}
+          onClick={() => handleOrientationChange('portrait')}
+          aria-label="Show portrait videos"
+        >
+          <svg width="10" height="16" viewBox="0 0 10 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect x="0.5" y="0.5" width="9" height="15" rx="2.5" stroke="currentColor" strokeWidth="1.2"/>
+            <circle cx="5" cy="8" r="2" fill="currentColor" opacity="0.5"/>
+          </svg>
+          Portrait
+        </button>
+      </div>
+
+      {/* Left Arrow — hidden on mobile via CSS */}
       {filteredVideos.length > 1 && (
-        <button onClick={prev} className="nav-btn left-arrow">
-          <ChevronLeft size={24}/>
+        <button onClick={prev} className="nav-btn left-arrow" aria-label="Previous video">
+          <ChevronLeft size={22} />
         </button>
       )}
 
-      <div className="cards-wrapper">
-
+      {/* Wrapper height is driven by the active card's computed height */}
+      <div className="cards-wrapper" style={{ height: activeH }}>
         <AnimatePresence mode="popLayout">
           {filteredVideos.map((video, index) => {
             const isActive = index === activeIndex;
             const isPrev = index === (activeIndex - 1 + filteredVideos.length) % filteredVideos.length;
             const isNext = index === (activeIndex + 1) % filteredVideos.length;
-            // Dynamic width/height based on true aspect ratio
-            const isMobile = windowWidth < 768;
-            const isHorizontal = video.type === 'horizontal';
-            
-            // Glass card padding is 1rem each side (32px), app-container padding is 1rem (32px)
-            // Available width = windowWidth - 64px
-            const maxCardWidth = isMobile ? windowWidth - 64 : 640; 
-            
-            let cardWidth = isHorizontal ? 640 : 340;
-            let cardHeight = isHorizontal ? 360 : 604; // 16:9 and 9:16 exactly
-            
-            if (isMobile) {
-              cardWidth = maxCardWidth;
-              cardHeight = isHorizontal ? cardWidth * (9/16) : cardWidth * (16/9);
-            }
+
+            const { w: cardWidth, h: cardHeight } = getCardDimensions(windowWidth, video.type === 'horizontal');
 
             let x = 0;
             let zIndex = 0;
             let scale = 1;
             let opacity = 1;
-            let blur = 0;
-            
-            // On mobile, the side cards should be pushed further away or overlap more
-            const xOffset = isMobile ? windowWidth * 0.5 : 400;
             let boxShadow = '0 0 0 rgba(0,0,0,0)';
 
             if (isActive) {
-              x = 0; zIndex = 10; scale = 1; blur = 0;
+              x = 0; zIndex = 10; scale = 1;
               boxShadow = '0 20px 40px rgba(0,0,0,0.2)';
             } else if (isPrev && filteredVideos.length > 1) {
-              x = -xOffset; zIndex = 5; scale = 0.85; opacity = 1; blur = 0;
+              x = -xOffset; zIndex = 5; scale = 0.85; opacity = 1;
               boxShadow = '0 10px 20px rgba(0,0,0,0.05)';
             } else if (isNext && filteredVideos.length > 1) {
-              x = xOffset; zIndex = 5; scale = 0.85; opacity = 1; blur = 0;
+              x = xOffset; zIndex = 5; scale = 0.85; opacity = 1;
               boxShadow = '0 10px 20px rgba(0,0,0,0.05)';
             } else {
               opacity = 0; scale = 0.5; zIndex = 0;
@@ -177,11 +245,10 @@ export default function Carousel({ category }: { category: string }) {
                   zIndex,
                   opacity,
                   boxShadow,
-                  filter: `blur(${blur}px)`,
                   width: cardWidth,
                   height: cardHeight
                 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
+                transition={{ duration: 0.5, ease: 'easeOut' }}
                 onClick={() => {
                   if (isPrev) prev();
                   if (isNext) next();
@@ -194,13 +261,12 @@ export default function Carousel({ category }: { category: string }) {
             );
           })}
         </AnimatePresence>
-
       </div>
 
-      {/* Right Arrow outside wrapper so it's not affected by mask dissolve */}
+      {/* Right Arrow — hidden on mobile via CSS */}
       {filteredVideos.length > 1 && (
-        <button onClick={next} className="nav-btn right-arrow">
-          <ChevronRight size={24}/>
+        <button onClick={next} className="nav-btn right-arrow" aria-label="Next video">
+          <ChevronRight size={22} />
         </button>
       )}
     </div>

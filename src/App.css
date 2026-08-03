@@ -17,19 +17,122 @@
 body {
   font-family: 'Noto Sans Thai', 'Inter', sans-serif;
   background-color: var(--bg-color);
+  /* Allow natural scroll — do NOT use overflow: hidden on body */
+  overflow-x: hidden;
+}
+
+/* ─── Splash Screen ──────────────────────────── */
+
+.splash-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
   overflow: hidden;
 }
 
-.app-container {
-  position: relative;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
+/* Colorful cinematic gradient burst — revealed when assets finish loading */
+.splash-color-burst {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 70% 55% at 15% 85%, rgba(200, 110, 20, 0.75), transparent),
+    radial-gradient(ellipse 55% 65% at 85% 15%, rgba(110, 50, 160, 0.65), transparent),
+    radial-gradient(ellipse 60% 50% at 55% 55%, rgba(20, 70, 130, 0.45), transparent),
+    radial-gradient(ellipse 40% 40% at 80% 80%, rgba(160, 60, 40, 0.4), transparent),
+    #0b0c10;
+  /* Subtle slow pulse to feel alive */
+  animation: burstPulse 4s ease-in-out infinite alternate;
 }
 
-/* Simulated blurred background matching screenshot */
+@keyframes burstPulse {
+  from { filter: brightness(1);   }
+  to   { filter: brightness(1.15); }
+}
+
+/* Ensure logo / progress / label stack above the burst */
+.splash-logo,
+.splash-progress-track,
+.splash-label {
+  position: relative;
+  z-index: 1;
+}
+
+.splash-logo {
+  max-width: 200px;
+  width: 55vw;
+}
+
+@media (min-width: 640px) {
+  .splash-logo {
+    max-width: 240px;
+    width: auto;
+  }
+}
+
+.splash-progress-track {
+  width: 160px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .splash-progress-track {
+    width: 200px;
+  }
+}
+
+.splash-progress-bar {
+  height: 100%;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 99px;
+  min-width: 4px;
+}
+
+.splash-label {
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: -1rem;
+}
+
+/* ─── Layout ─────────────────────────────────── */
+
+.app-container {
+  position: relative;
+  min-height: 100svh; /* safe viewport height */
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .app-container {
+    padding: 1.5rem;
+    align-items: center;
+  }
+}
+
+@media (min-width: 1024px) {
+  .app-container {
+    padding: 2rem;
+    align-items: center;
+  }
+}
+
+/* ─── Ambient background ─────────────────────── */
+
 .ambient-background {
   position: fixed;
   top: -5%; left: -5%;
@@ -41,60 +144,121 @@ body {
   z-index: -1;
 }
 
+/* ─── Glass Card ─────────────────────────────── */
+
 .glass-card {
   background: var(--glass-bg);
   width: 100%;
-  max-width: 1100px;
-  max-height: calc(100vh - 2rem);
-  overflow-y: auto;
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
-  border-radius: 32px;
-  padding: 4rem 2rem;
-  box-shadow: 0 40px 80px rgba(0,0,0,0.4), 
-              inset 0 0 0 1px rgba(255,255,255,0.5);
+  border-radius: 20px;
+  padding: 2rem 1rem 2.5rem;
+  box-shadow:
+    0 40px 80px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.5);
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-.glass-card::-webkit-scrollbar {
-  display: none; /* Chrome, Safari and Opera */
+  /* Let content determine height — no max-height clipping */
 }
 
-/* Header */
-.header {
-  text-align: center;
-  margin-bottom: 3rem;
+@media (min-width: 640px) {
+  .glass-card {
+    border-radius: 28px;
+    padding: 3rem 2rem;
+  }
 }
+
+@media (min-width: 1024px) {
+  .glass-card {
+    max-width: 1100px;
+    border-radius: 32px;
+    padding: 4rem 3rem;
+  }
+}
+
+/* ─── Language Toggle ────────────────────────── */
 
 .lang-toggle {
   position: absolute;
-  top: 2rem;
-  right: 2rem;
+  top: 1.25rem;
+  right: 1.25rem;
   background: rgba(255, 255, 255, 0.5);
-  border: 1px solid rgba(0,0,0,0.1);
-  padding: 8px 16px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 6px 12px;
   border-radius: 20px;
   font-weight: 600;
+  font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.2s ease;
   color: var(--text-dark);
+  z-index: 10;
 }
 
 .lang-toggle:hover {
   background: rgba(255, 255, 255, 0.9);
 }
 
+@media (min-width: 640px) {
+  .lang-toggle {
+    top: 1.5rem;
+    right: 1.5rem;
+    padding: 7px 14px;
+    font-size: 0.875rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .lang-toggle {
+    top: 2rem;
+    right: 2rem;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+  }
+}
+
+/* ─── Header ─────────────────────────────────── */
+
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 0 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .header {
+    margin-bottom: 2.5rem;
+    padding: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .header {
+    margin-bottom: 3rem;
+  }
+}
+
 .logo {
-  max-height: 40px;
-  margin-bottom: 1.5rem;
-  /* Darken the white logo so it's visible on light glass */
-  filter: brightness(0) invert(0); 
+  max-height: 32px;
+  margin-bottom: 1.25rem;
+  filter: brightness(0) invert(0);
+}
+
+@media (min-width: 640px) {
+  .logo {
+    max-height: 36px;
+    margin-bottom: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .logo {
+    max-height: 40px;
+    margin-bottom: 1.5rem;
+  }
 }
 
 .subtitle {
   display: block;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -102,30 +266,59 @@ body {
   margin-bottom: 0.5rem;
 }
 
+@media (min-width: 640px) {
+  .subtitle {
+    font-size: 0.75rem;
+  }
+}
+
 .title {
-  font-size: 2.5rem;
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
   font-weight: 600;
   color: var(--text-dark);
   margin-bottom: 1rem;
+  line-height: 1.2;
 }
 
 .description {
-  font-size: 1rem;
+  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
   color: var(--text-light);
-  line-height: 1.5;
+  line-height: 1.6;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
-/* Category Pills */
+@media (min-width: 1024px) {
+  .description {
+    max-width: 900px;
+  }
+}
+
+/* ─── Category Pills ─────────────────────────── */
+
 .pills-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 0.75rem;
   justify-content: center;
-  margin-bottom: 4rem;
+  margin-bottom: 2.5rem;
+}
+
+@media (min-width: 640px) {
+  .pills-container {
+    gap: 1rem;
+    margin-bottom: 3rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .pills-container {
+    margin-bottom: 4rem;
+  }
 }
 
 .pill {
-  padding: 0.5rem 1.5rem;
+  padding: 0.45rem 1.25rem;
   border-radius: 99px;
   border: 1px solid #d1d5db;
   background: transparent;
@@ -134,6 +327,12 @@ body {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+}
+
+@media (min-width: 640px) {
+  .pill {
+    padding: 0.5rem 1.5rem;
+  }
 }
 
 .pill:hover {
@@ -151,6 +350,8 @@ body {
   font-weight: 600;
 }
 
+/* ─── Carousel ───────────────────────────────── */
+
 .carousel-container {
   width: 100%;
   display: flex;
@@ -159,42 +360,70 @@ body {
   justify-content: center;
   position: relative;
   margin-bottom: 2rem;
+  /* Allow side-card peeks to overflow on desktop */
+  overflow: visible;
+}
+
+/* On mobile, clip the peek so it doesn't cause horizontal scroll */
+@media (max-width: 639px) {
+  .carousel-container {
+    overflow: hidden;
+  }
 }
 
 .cards-wrapper {
   position: relative;
   width: 100%;
-  height: 680px; /* Increased height to fit true 9:16 vertical videos */
+  /* Height set by JS via inline style — no fixed value here */
   display: flex;
   justify-content: center;
   align-items: center;
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%);
-  mask-image: linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%);
+}
+
+/* Desktop gradient mask for peek effect */
+@media (min-width: 640px) {
+  .cards-wrapper {
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%);
+  }
 }
 
 .carousel-card {
   position: absolute;
   inset: 0;
   margin: auto;
-  border-radius: 20px;
+  border-radius: 16px;
   overflow: hidden;
   background: #000;
   transform-origin: center;
 }
 
+@media (min-width: 640px) {
+  .carousel-card {
+    border-radius: 20px;
+  }
+}
+
 .card-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(255,255,255,0.5); /* White tint to lighten inactive cards */
-  pointer-events: auto; /* Block clicks to the iframe underneath */
-  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.5);
+  pointer-events: auto;
+  border-radius: 16px;
   z-index: 10;
 }
 
-/* Arrows inside the wrapper */
+@media (min-width: 640px) {
+  .card-overlay {
+    border-radius: 20px;
+  }
+}
+
+/* ─── Nav Arrows ─────────────────────────────── */
+
 .nav-btn {
-  width: 56px;
-  height: 56px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.4);
   background: rgba(255, 255, 255, 0.8);
@@ -207,7 +436,14 @@ body {
   color: var(--text-dark);
   position: absolute;
   z-index: 20;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+@media (min-width: 1024px) {
+  .nav-btn {
+    width: 56px;
+    height: 56px;
+  }
 }
 
 .nav-btn:hover {
@@ -227,19 +463,163 @@ body {
   transform: translateY(-50%);
 }
 
-/* Contact & About Placeholders */
+/* Hide nav on mobile — swipe only */
+@media (max-width: 639px) {
+  .nav-btn {
+    display: none;
+  }
+}
+
+/* ─── Orientation Toggle ─────────────────────── */
+
+.orientation-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 99px;
+  padding: 4px;
+  margin-bottom: 1.5rem;
+}
+
+.orient-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 99px;
+  border: none;
+  background: transparent;
+  color: var(--text-light);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.orient-btn:hover {
+  color: var(--text-dark);
+}
+
+.orient-btn.active {
+  background: #fff;
+  color: var(--text-dark);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12);
+  font-weight: 600;
+}
+
+@media (min-width: 640px) {
+  .orient-btn {
+    padding: 7px 16px;
+    font-size: 0.85rem;
+  }
+}
+
+/* ─── Contact Section ────────────────────────── */
+
+
+.contact-section {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-dark);
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .contact-section {
+    padding: 4rem 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .contact-section {
+    padding: 5rem 2rem;
+  }
+}
+
+.contact-section h2 {
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.contact-section p {
+  margin-bottom: 2rem;
+  color: var(--text-light);
+  font-size: clamp(0.9rem, 2.5vw, 1rem);
+  line-height: 1.6;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.contact-links {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+@media (min-width: 640px) {
+  .contact-links {
+    gap: 1rem;
+  }
+}
+
+.contact-link-btn {
+  display: inline-block;
+  padding: 11px 22px;
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+@media (min-width: 640px) {
+  .contact-link-btn {
+    padding: 12px 24px;
+    font-size: 0.95rem;
+  }
+}
+
+.contact-link-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.contact-link-btn.email {
+  background: #fff;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.contact-link-btn.social {
+  background: var(--accent);
+  color: #fff;
+  border: 1px solid var(--accent);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* ─── About ──────────────────────────────────── */
+
 .about-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4rem;
-  padding: 2rem 0;
+  gap: 3rem;
+  padding: 1.5rem 0;
   width: 100%;
 }
 
 @media (min-width: 900px) {
   .about-container {
     flex-direction: row;
+    align-items: flex-start;
+    gap: 4rem;
     padding: 4rem 2rem;
   }
 }
@@ -247,10 +627,23 @@ body {
 .about-images {
   position: relative;
   width: 100%;
-  max-width: 320px;
+  max-width: 280px;
   aspect-ratio: 3/4;
   flex-shrink: 0;
   margin: 0 auto;
+}
+
+@media (min-width: 640px) {
+  .about-images {
+    max-width: 300px;
+  }
+}
+
+@media (min-width: 900px) {
+  .about-images {
+    max-width: 320px;
+    margin: 0;
+  }
 }
 
 .about-main-photo {
@@ -258,7 +651,7 @@ body {
   height: 100%;
   border-radius: 32px;
   overflow: hidden;
-  box-shadow: 0 24px 48px rgba(0,0,0,0.15);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.15);
 }
 
 .about-main-photo img {
@@ -272,7 +665,7 @@ body {
   border-radius: 50%;
   overflow: hidden;
   border: 6px solid var(--glass-bg);
-  box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
 }
 
 .about-bubble img {
@@ -282,25 +675,40 @@ body {
 }
 
 .bubble-left {
-  width: 140px;
-  height: 140px;
-  bottom: -30px;
-  left: -50px;
+  width: 120px;
+  height: 120px;
+  bottom: -25px;
+  left: -20px;
 }
 
 .bubble-right {
-  width: 110px;
-  height: 110px;
-  top: -20px;
-  right: -30px;
+  width: 95px;
+  height: 95px;
+  top: -15px;
+  right: -15px;
 }
 
-@media (max-width: 500px) {
+@media (min-width: 640px) {
   .bubble-left {
-    left: -20px;
+    width: 140px;
+    height: 140px;
+    bottom: -30px;
+    left: -30px;
   }
   .bubble-right {
-    right: -10px;
+    width: 110px;
+    height: 110px;
+    top: -20px;
+    right: -20px;
+  }
+}
+
+@media (min-width: 900px) {
+  .bubble-left {
+    left: -50px;
+  }
+  .bubble-right {
+    right: -30px;
   }
 }
 
@@ -310,64 +718,29 @@ body {
 }
 
 .about-text h2 {
-  font-size: 2.5rem;
+  font-size: clamp(1.6rem, 4vw, 2.5rem);
   font-weight: 700;
   margin-bottom: 0.5rem;
+  line-height: 1.2;
 }
 
 .about-text h3 {
-  font-size: 1.25rem;
+  font-size: clamp(0.95rem, 2.5vw, 1.25rem);
   font-weight: 500;
   color: var(--accent);
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.4;
+}
+
+@media (min-width: 640px) {
+  .about-text h3 {
+    margin-bottom: 2rem;
+  }
 }
 
 .about-text p {
-  font-size: 1.1rem;
+  font-size: clamp(0.95rem, 2vw, 1.1rem);
   line-height: 1.8;
   color: var(--text-light);
   margin-bottom: 1.5rem;
-}
-
-/* Responsive Overrides */
-@media (max-width: 768px) {
-  .app-container {
-    padding: 1rem;
-    align-items: flex-start; /* Fix scroll clipping on tall content */
-  }
-  .glass-card {
-    padding: 2.5rem 1rem;
-    border-radius: 24px;
-    margin-top: 1rem; /* Provide some space at the top */
-  }
-  .title {
-    font-size: 1.8rem;
-  }
-  .description {
-    font-size: 0.95rem;
-    padding: 0 0.5rem;
-  }
-  .lang-toggle {
-    top: 1.25rem;
-    right: 1.25rem;
-    padding: 6px 12px;
-    font-size: 0.85rem;
-  }
-  .cards-wrapper {
-    height: 600px; /* Big enough for 16:9 vertical videos on mobile */
-    -webkit-mask-image: none;
-    mask-image: none;
-  }
-  .nav-btn {
-    display: none; /* Hide arrows on mobile for touch sliding */
-  }
-  .about-container {
-    padding: 1rem 0;
-  }
-  .about-images {
-    max-width: 280px;
-  }
-  .about-text h2 {
-    font-size: 2rem;
-  }
 }
